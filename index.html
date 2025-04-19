@@ -1,83 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Axcel Chat - Login</title>
+  <meta charset="UTF-8">
+  <title>Axcel Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      margin: 0;
-      background: #0f0f0f;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    h1 {
-      margin-bottom: 30px;
-      font-size: 2em;
-    }
-    input {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 10px;
-      border: none;
-      width: 250px;
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Axcel Chat - Login</title>
-  <style>
-    body {
-      margin: 0;
-      background: #0f0f0f;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    h1 {
-      margin-bottom: 30px;
-      font-size: 2em;
-    }
-    input {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 10px;
-      border: none;
-      width: 250px;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #1f80e0;
+      background-color: #111;
       color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 2.5em;
+    }
+
+    input {
+      margin: 8px 0;
+      padding: 10px;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
+      width: 250px;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #1e88e5;
+      color: white;
       cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1565c0;
     }
   </style>
 </head>
 <body>
   <h1>Axcel Chat</h1>
-  <input type="text" id="username" placeholder="Your ID" />
-  <input type="email" id="email" placeholder="Email" />
-  <input type="password" id="password" placeholder="Password" />
+  <input type="text" id="username" placeholder="Your ID (for search)">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
   <button onclick="register()">Register</button>
   <button onclick="login()">Login</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, setDoc, doc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAotSEQ5AUFuOCLnW2psgbnkQTEna6_88E",
@@ -93,11 +71,14 @@
     const db = getFirestore(app);
 
     async function register() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const username = document.getElementById("username").value;
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const username = document.getElementById("username").value.trim();
 
-      if (!username) return alert("Please enter your ID");
+      if (!username || !email || !password) {
+        alert("Fill all fields");
+        return;
+      }
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -105,82 +86,48 @@
 
         await setDoc(doc(db, "users", username), {
           uid: user.uid,
-          email: user.email,
+          email: email
         });
 
         localStorage.setItem("uid", user.uid);
         localStorage.setItem("username", username);
+
         window.location.href = "chat.html";
       } catch (error) {
-        alert("Registration error: " + error.message);
+        alert("Registration failed: " + error.message);
       }
     }
 
     async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        // حالا از دیتابیس چک کن آی‌دی چی بوده
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        let foundUsername = "";
+        usersSnapshot.forEach((docu) => {
+          if (docu.data().uid === user.uid) {
+            foundUsername = docu.id;
+          }
+        });
+
+        if (!foundUsername) {
+          alert("User ID not found in database.");
+          return;
+        }
+
         localStorage.setItem("uid", user.uid);
+        localStorage.setItem("username", foundUsername);
+
         window.location.href = "chat.html";
       } catch (error) {
-        alert("Login error: " + error.message);
+        alert("Login failed: " + error.message);
       }
     }
   </script>
 </body>
-</html>￼Enter    }
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #1f80e0;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <h1>Axcel Chat</h1>
-  <input type="text" id="username" placeholder="Your ID" />
-  <input type="email" id="email" placeholder="Email" />
-  <input type="password" id="password" placeholder="Password" />
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-apiKey: "AIzaSyAotSEQ5AUFuOCLnW2psgbnkQTEna6_88E",
-      authDomain: "chat-94a24.firebaseapp.com",
-      projectId: "chat-94a24",
-      storageBucket: "chat-94a24.firebasestorage.app",
-      messagingSenderId: "31996767354",
-      appId: "1:31996767354:web:057533c0f9d30dcbf4dfc3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    async function register() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const username = document.getElementById("username").value;
-
-      if (!username) return alert("Please enter your ID");
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        await setDoc(doc(db, "users", username), {
-          uid: user.uid,
-          email: user.email,
+</html>
