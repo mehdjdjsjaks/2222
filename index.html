@@ -4,6 +4,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Axcel Chat</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, addDoc, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";const firebaseConfig = {
+  apiKey: "AIzaSyAotSEQ5AUFuOCLnW2psgbnkQTEna6_88E",
+  authDomain: "chat-94a24.firebaseapp.com",
+  projectId: "chat-94a24",
+  storageBucket: "chat-94a24.firebasestorage.app",
+  messagingSenderId: "31996767354",
+  appId: "1:31996767354:web:057533c0f9d30dcbf4dfc3"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore();
+
+let currentUser = null;
+let chattingWith = null;
+
+document.getElementById("messageInput").disabled = true;
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    currentUser = user;
+    console.log("Logged in as", user.email);
+  }
+});
+
+window.login = async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, "users", email), { email });
+  }
+};
+
+window.searchUser = async function () {
+  const searchId = document.getElementById("searchInput").value;
+  const docRef = doc(db, "users", searchId);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    document.getElementById("searchResult").style.display = "block";
+    document.getElementById("foundUser").innerText = searchId;
+    chattingWith = searchId;
+  } else {
+    alert("User not found");
+  }
+};
+
+window.startChat = function () {
+  document.getElementById("chatBox").innerHTML = "";
+  listenForMessages();
+  document.getElementById("messageInput").disabled = false;
+};
+
+window.sendMessage = async function () {
+  const message = document.getElementById("messageInput").value;
+  if (!message || !chattingWith) return;
+  await addDoc(collection(db, "chats"), {
+    from: currentUser.email,
+    to: chattingWith,
+    text: message,
+    time: serverTimestamp()
+  });
+  document.getElementById("messageInput").value = "";
+};
+
+function listenForMessages() {
+  const q = query(collection(db, "chats"), orderBy("time"));
+  onSnapshot(q, snapshot => {
+    const chatBox = document.getElementById("chatBox");
+    chatBox.innerHTML = "";
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (
+        (data.from === currentUser.email && data.to === chattingWith) ||
+        (data.from === chattingWith && data.to === currentUser.email)
+      ) {
+        const div = document.createElement("div");
+        div.className = "message" + (data.from === currentUser.email ? " you" : "");
+        div.innerText = data.text;
+        chatBox.appendChild(div);
+      }
+    });
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+}
+
+  </script>
   <style>
     * {
       margin: 0;
@@ -122,32 +214,6 @@ button:hover {
 <input type="text" id="messageInput" placeholder="Type your message...">
 <button onclick="sendMessage()">Send</button>
 
-  </div>  <script>
-    // Placeholder for Firebase setup
-    function login() {
-      alert("Login/signup function will go here.");
-    }
-
-    function searchUser() {
-      const id = document.getElementById("searchInput").value;
-      document.getElementById("searchResult").style.display = "block";
-      document.getElementById("foundUser").innerText = id;
-    }
-
-    function startChat() {
-      alert("Chat with user started!");
-    }
-
-    function sendMessage() {
-      const chatBox = document.getElementById("chatBox");
-      const msgInput = document.getElementById("messageInput");
-      const message = msgInput.value;
-      if (!message) return;
-      const msgDiv = document.createElement("div");
-      msgDiv.className = "message you";
-      msgDiv.innerText = message;
-      chatBox.appendChild(msgDiv);
-      msgInput.value = "";
-    }
-  </script></body>
+  </div>
+</body>
 </html>
