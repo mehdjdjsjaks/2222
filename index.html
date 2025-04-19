@@ -1,27 +1,33 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Axcel Chat - ورود</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Axcel Chat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     body {
       background-color: #0d1117;
       color: white;
-      font-family: 'Vazir', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
     .container {
-      margin-top: 50px;
       max-width: 400px;
-    }
-    input.form-control {
+      width: 100%;
+      padding: 20px;
       background-color: #161b22;
+      border-radius: 12px;
+    }
+    .form-control {
+      background-color: #0d1117;
       color: white;
       border: 1px solid #30363d;
     }
-    input.form-control:focus {
-      background-color: #161b22;
+    .form-control:focus {
+      background-color: #0d1117;
       color: white;
       border-color: #58a6ff;
       box-shadow: none;
@@ -33,70 +39,27 @@
     .btn-primary:hover {
       background-color: #2ea043;
     }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2 class="text-center mb-4">Axcel Chat</h2>
-    <div id="auth-section">
-      <div class="mb-3">
-        <input type="email" class="form-control" id="email" placeholder="ایمیل">
-      </div>
-      <div class="mb-3">
-        <input type="password" class="form-control" id="password" placeholder="رمز عبور">
-      </div>
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Axcel Chat - ورود</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #0d1117;
-      color: white;
-      font-family: 'Vazir', sans-serif;
-    }
-    .container {
-      margin-top: 50px;
-      max-width: 400px;
-    }
-    input.form-control {
-      background-color: #161b22;
-      color: white;
-      border: 1px solid #30363d;
-    }
-    input.form-control:focus {
-      background-color: #161b22;
-      color: white;
-      border-color: #58a6ff;
-      box-shadow: none;
-    }
-    .btn-primary {
-      background-color: #238636;
-      border: none;
-    }
-    .btn-primary:hover {
-      background-color: #2ea043;
+    .link {
+      color: #58a6ff;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 class="text-center mb-4">Axcel Chat</h2>
-    <div id="auth-section">
-      <div class="mb-3">
-        <input type="email" class="form-control" id="email" placeholder="ایمیل">
-      </div>
-      <div class="mb-3">
-        <input type="password" class="form-control" id="password" placeholder="رمز عبور">
-      </div>
-      <div class="mb-3">
-        <input type="text" class="form-control" id="username" placeholder="آیدی (فقط موقع ثبت‌نام)">
-      </div>
-      <button class="btn btn-primary w-100 mb-2" onclick="login()">ورود</button>
-      <button class="btn btn-secondary w-100" onclick="signup()">ثبت‌نام</button>
+    <h3 class="text-center mb-4">Axcel Chat</h3>
+    <div class="mb-3">
+      <input type="email" id="email" class="form-control" placeholder="Email" />
+    </div>
+    <div class="mb-3">
+      <input type="password" id="password" class="form-control" placeholder="Password" />
+    </div>
+    <div class="mb-3 d-none" id="username-field">
+      <input type="text" id="username" class="form-control" placeholder="ID (only for register)" />
+    </div>
+    <button class="btn btn-primary w-100 mb-2" onclick="login()">Login</button>
+    <div class="text-center">
+      Don't have an account? <span class="link" onclick="toggleRegister()">Register</span>
     </div>
   </div>
 
@@ -127,98 +90,52 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    async function signup() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const username = document.getElementById("username").value;
+    let isRegister = false;
 
-      if (!username) return alert("لطفاً آیدی را وارد کنید.");
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-        await setDoc(doc(db, "users", uid), {
-          email: email,
-          id: username,
-          uid: uid
-        });
-        alert("ثبت‌نام با موفقیت انجام شد.");
-      } catch (error) {
-        alert(error.message);
-      }
+    function toggleRegister() {
+      isRegister = !isRegister;
+      document.getElementById("username-field").classList.toggle("d-none", !isRegister);
+      document.querySelector("button").innerText = isRegister ? "Register" : "Login";
     }
 
     async function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-        const userDoc = await getDoc(doc(db, "users", uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          localStorage.setItem("uid", uid);
-          localStorage.setItem("id", userData.id);
+      if (isRegister) {
+        const username = document.getElementById("username").value;
+        if (!username) return alert("Please enter a unique ID.");
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const uid = userCredential.user.uid;
+          await setDoc(doc(db, "users", uid), {
+            email: email,
+            id: username,
+            uid: uid
+          });
+          alert("Registered successfully.");
           window.location.href = "chat.html";
-        } else {
-          alert("اطلاعات کاربر یافت نشد.");
+        } catch (error) {
+          alert(error.message);
         }
-      } catch (error) {
-        alert(error.message);
+      } else {
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const uid = userCredential.user.uid;
+          const userDoc = await getDoc(doc(db, "users", uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            localStorage.setItem("uid", uid);
+            localStorage.setItem("id", userData.id);
+            window.location.href = "chat.html";
+          } else {
+            alert("User data not found.");
+          }
+        } catch (error) {
+          alert(error.message);
+        }
       }
     }
   </script>
 </body>
-</html>￼Enter      <div class="mb-3">
-        <input type="text" class="form-control" id="username" placeholder="آیدی (فقط موقع ثبت‌نام)">
-      </div>
-      <button class="btn btn-primary w-100 mb-2" onclick="login()">ورود</button>
-      <button class="btn btn-secondary w-100" onclick="signup()">ثبت‌نام</button>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import {
-      getFirestore,
-      setDoc,
-      getDoc,
-      doc
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAotSEQ5AUFuOCLnW2psgbnkQTEna6_88E",
-      authDomain: "chat-94a24.firebaseapp.com",
-      projectId: "chat-94a24",
-storageBucket: "chat-94a24.appspot.com",
-      messagingSenderId: "31996767354",
-      appId: "1:31996767354:web:057533c0f9d30dcbf4dfc3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    async function signup() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const username = document.getElementById("username").value;
-
-      if (!username) return alert("لطفاً آیدی را وارد کنید.");
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-        await setDoc(doc(db, "users", uid), {
-          email: email,
-          id: username,
-          uid: uid
-        });
-        alert("ثبت‌نام با موفقیت انجام شد.");
-      } catch (error) {
+</html>
