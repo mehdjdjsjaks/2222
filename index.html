@@ -3,32 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Axcel Chat</title>
+  <title>Axcel Chat - Login</title>
   <style>
     body {
       background-color: #121212;
       font-family: Arial, sans-serif;
       color: white;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
       margin: 0;
     }
 
     .container {
-      background-color: #1e1e1e;
-      padding: 40px;
+      background-color: #1f1f1f;
+      padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
       width: 90%;
       max-width: 400px;
     }
 
-    h1 {
+    .container h2 {
       text-align: center;
       margin-bottom: 20px;
+      font-size: 24px;
     }
 
     input {
@@ -37,52 +37,9 @@
       margin-bottom: 15px;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Axcel Chat</title>
-  <style>
-    body {
-      background-color: #121212;
-      font-family: Arial, sans-serif;
+      font-size: 15px;
+      background-color: #333;
       color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .container {
-      background-color: #1e1e1e;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      width: 90%;
-      max-width: 400px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
     }
 
     button {
@@ -104,7 +61,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Axcel Chat</h1>
+    <h2>Axcel Chat</h2>
     <input type="text" id="userId" placeholder="Your ID (for register only)">
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
@@ -135,8 +92,8 @@
       const password = document.getElementById("password").value;
       const userId = document.getElementById("userId").value;
 
-      if (!userId) {
-        alert("Please enter a user ID.");
+      if (!userId || !email || !password) {
+        alert("Please fill in all fields.");
         return;
       }
 
@@ -147,7 +104,7 @@
           uid: user.uid,
           email: user.email
         });
-        alert("Registered successfully!");
+        alert("Registration successful!");
       } catch (error) {
         alert(error.message);
       }
@@ -156,6 +113,11 @@
     async function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        alert("Please fill in both email and password.");
+        return;
+      }
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
@@ -166,55 +128,4 @@
     }
   </script>
 </body>
-</html>￼Enter      background-color: #00c853;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-
-    button:hover {
-      background-color: #00b248;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Axcel Chat</h1>
-    <input type="text" id="userId" placeholder="Your ID (for register only)">
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="register()">Register</button>
-    <button onclick="login()">Login</button>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-port { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAotSEQ5AUFuOCLnW2psgbnkQTEna6_88E",
-      authDomain: "chat-94a24.firebaseapp.com",
-      projectId: "chat-94a24",
-      storageBucket: "chat-94a24.firebasestorage.app",
-      messagingSenderId: "31996767354",
-      appId: "1:31996767354:web:057533c0f9d30dcbf4dfc3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    async function register() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const userId = document.getElementById("userId").value;
-
-      if (!userId) {
-        alert("Please enter a user ID.");
-        return;
-      }
-
+</html>
