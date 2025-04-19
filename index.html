@@ -2,217 +2,135 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Axcel Chat</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Chat App - Login/Register</title>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, addDoc, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";const firebaseConfig = {
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";const firebaseConfig = {
   apiKey: "AIzaSyAotSEQ5AUFuOCLnW2psgbnkQTEna6_88E",
   authDomain: "chat-94a24.firebaseapp.com",
   projectId: "chat-94a24",
-  storageBucket: "chat-94a24.firebasestorage.app",
+  storageBucket: "chat-94a24.appspot.com",
   messagingSenderId: "31996767354",
   appId: "1:31996767354:web:057533c0f9d30dcbf4dfc3"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
+const auth = getAuth(app);
 
-let currentUser = null;
-let chattingWith = null;
+const loginForm = document.getElementById("login-form");
+const registerForm = document.getElementById("register-form");
+const showRegister = document.getElementById("show-register");
+const showLogin = document.getElementById("show-login");
 
-document.getElementById("messageInput").disabled = true;
-
-onAuthStateChanged(auth, user => {
-  if (user) {
-    currentUser = user;
-    console.log("Logged in as", user.email);
-  }
-});
-
-window.login = async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (err) {
-    await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db, "users", email), { email });
-  }
+showRegister.onclick = () => {
+  loginForm.style.display = "none";
+  registerForm.style.display = "block";
 };
 
-window.searchUser = async function () {
-  const searchId = document.getElementById("searchInput").value;
-  const docRef = doc(db, "users", searchId);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    document.getElementById("searchResult").style.display = "block";
-    document.getElementById("foundUser").innerText = searchId;
-    chattingWith = searchId;
-  } else {
-    alert("User not found");
-  }
+showLogin.onclick = () => {
+  loginForm.style.display = "block";
+  registerForm.style.display = "none";
 };
 
-window.startChat = function () {
-  document.getElementById("chatBox").innerHTML = "";
-  listenForMessages();
-  document.getElementById("messageInput").disabled = false;
-};
+document.getElementById("login-btn").onclick = () => {
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
 
-window.sendMessage = async function () {
-  const message = document.getElementById("messageInput").value;
-  if (!message || !chattingWith) return;
-  await addDoc(collection(db, "chats"), {
-    from: currentUser.email,
-    to: chattingWith,
-    text: message,
-    time: serverTimestamp()
-  });
-  document.getElementById("messageInput").value = "";
-};
-
-function listenForMessages() {
-  const q = query(collection(db, "chats"), orderBy("time"));
-  onSnapshot(q, snapshot => {
-    const chatBox = document.getElementById("chatBox");
-    chatBox.innerHTML = "";
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      if (
-        (data.from === currentUser.email && data.to === chattingWith) ||
-        (data.from === chattingWith && data.to === currentUser.email)
-      ) {
-        const div = document.createElement("div");
-        div.className = "message" + (data.from === currentUser.email ? " you" : "");
-        div.innerText = data.text;
-        chatBox.appendChild(div);
-      }
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      window.location.href = "chat.html";
+    })
+    .catch((error) => {
+      alert("Login failed: " + error.message);
     });
-    chatBox.scrollTop = chatBox.scrollHeight;
-  });
-}
+};
+
+document.getElementById("register-btn").onclick = () => {
+  const email = document.getElementById("register-email").value;
+  const password = document.getElementById("register-password").value;
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      alert("Registration successful. Please login.");
+      showLogin.click();
+    })
+    .catch((error) => {
+      alert("Registration failed: " + error.message);
+    });
+};
 
   </script>
   <style>
-    * {
+    body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }body {
-  background-color: #0f0f0f;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: start;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-h1 {
-  font-size: 2rem;
-  margin-bottom: 20px;
-  color: #00ffff;
-}
-
-.container {
-  width: 100%;
-  max-width: 500px;
-  background-color: #1e1e1e;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-}
-
-input, button {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-input {
-  background-color: #2a2a2a;
-  color: white;
-}
-
-button {
-  background-color: #00ffff;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-button:hover {
-  background-color: #00cccc;
-}
-
-.search-bar {
-  display: flex;
-  gap: 10px;
-}
-
-.user-result {
-  background-color: #2a2a2a;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.user-result:hover {
-  background-color: #333;
-}
-
-.chat-box {
-  margin-top: 20px;
-  background-color: #121212;
-  padding: 10px;
-  border-radius: 12px;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.message {
-  margin-bottom: 10px;
-  padding: 8px 12px;
-  background-color: #2e2e2e;
-  border-radius: 10px;
-}
-
-.message.you {
-  background-color: #00ffff;
-  color: black;
-  align-self: flex-end;
-}
-
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .container {
+      background: #161b22;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      width: 90%;
+      max-width: 400px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      background: #0d1117;
+      color: white;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #238636;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .switch {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .switch span {
+      color: #58a6ff;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h1>Axcel Chat</h1>
   <div class="container">
-    <input type="text" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Login / Sign Up</button><div class="search-bar">
-  <input type="text" id="searchInput" placeholder="Search user by ID...">
-  <button onclick="searchUser()">Search</button>
+    <h2 style="text-align:center;">Axcel Chat</h2>
+    <div id="login-form">
+      <input type="email" id="login-email" placeholder="Email" />
+      <input type="password" id="login-password" placeholder="Password" />
+      <button id="login-btn">Login</button>
+      <div class="switch">Don't have an account? <span id="show-register">Register</span></div>
+    </div><div id="register-form" style="display: none;">
+  <input type="email" id="register-email" placeholder="Email" />
+  <input type="password" id="register-password" placeholder="Password" />
+  <button id="register-btn">Register</button>
+  <div class="switch">Already have an account? <span id="show-login">Login</span></div>
 </div>
-
-<div id="searchResult" class="user-result" style="display:none;" onclick="startChat()">
-  Found user: <span id="foundUser"></span>
-</div>
-
-<div class="chat-box" id="chatBox"></div>
-<input type="text" id="messageInput" placeholder="Type your message...">
-<button onclick="sendMessage()">Send</button>
 
   </div>
 </body>
