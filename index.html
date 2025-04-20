@@ -1,80 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chat App - Sign Up/Login</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Axcel Chat - Login</title>
   <style>
     body {
-      background-color: black;
+      background-color: #121212;
+      font-family: Arial, sans-serif;
       color: white;
-      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #1f1f1f;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .container h2 {
       text-align: center;
-      padding-top: 50px;
+      margin-bottom: 20px;
+      font-size: 24px;
     }
+
     input {
-      margin: 10px;
-      padding: 10px;
-      font-size: 16px;
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      background-color: #333;
+      color: white;
     }
+
     button {
-      padding: 10px 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #00c853;
+      color: white;
+      border: none;
+      border-radius: 8px;
       font-size: 16px;
-      margin: 10px;
       cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      background-color: #00b248;
     }
   </style>
 </head>
 <body>
-  <h1>Chat App</h1>
-  <input type="email" id="email" placeholder="Email"><br>
-  <input type="password" id="password" placeholder="Password"><br>
-  <button onclick="signUp()">Sign Up</button>
-  <button onclick="signIn()">Login</button>
+  <div class="container">
+    <h2>Axcel Chat</h2>
+    <input type="text" id="userId" placeholder="Your ID (for register only)">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+  </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-  <script>
-    // تنظیمات Firebase خودت رو اینجا بذار
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyAotSEQ5AUFuOCLnW2psgbnkQTEna6_88E",
+      authDomain: "chat-94a24.firebaseapp.com",
+      projectId: "chat-94a24",
+      storageBucket: "chat-94a24.firebasestorage.app",
+      messagingSenderId: "31996767354",
+      appId: "1:31996767354:web:057533c0f9d30dcbf4dfc3"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    function signUp() {
+    async function register() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
+      const userId = document.getElementById("userId").value;
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          alert("ثبت‌نام با موفقیت انجام شد");
-        })
-        .catch((error) => {
-          alert("خطا: " + error.message);
+      if (!userId || !email || !password) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        await setDoc(doc(db, "users", userId), {
+          uid: user.uid,
+          email: user.email
         });
+        alert("Registration successful!");
+      } catch (error) {
+        alert(error.message);
+      }
     }
 
-    function signIn() {
+    async function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          alert("ورود با موفقیت انجام شد");
-          // می‌تونی اینجا ریدایرکت کنی به صفحه چت
-          // window.location.href = "chat.html";
-        })
-        .catch((error) => {
-          alert("خطا: " + error.message);
-        });
+      if (!email || !password) {
+        alert("Please fill in both email and password.");
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "chat.html";
+      } catch (error) {
+        alert(error.message);
+      }
     }
   </script>
 </body>
